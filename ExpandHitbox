@@ -1,62 +1,50 @@
 --// SETTINGS
-local HITBOX_SIZE = Vector3.new(8, 8, 8) -- kích thước hitbox
-local HITBOX_COLOR = Color3.fromRGB(0, 170, 255)
+local NEW_SIZE = Vector3.new(6, 6, 6) -- chỉnh kích thước hitbox
+local DEBUG_COLOR = Color3.fromRGB(0, 170, 255)
 
---// SERVICES
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
---// FUNCTION tạo hitbox
-local function createHitbox(character)
+local function expandHitbox(character, player)
 	if not character then return end
-	if character:FindFirstChild("HumanoidRootPart") == nil then return end
-	if Players:GetPlayerFromCharacter(character) == LocalPlayer then return end
-	
-	-- tránh tạo trùng
-	if character:FindFirstChild("DebugHitbox") then return end
-	
+
 	local root = character:FindFirstChild("HumanoidRootPart")
-	
-	local hitbox = Instance.new("Part")
-	hitbox.Name = "DebugHitbox"
-	hitbox.Size = HITBOX_SIZE
-	hitbox.Transparency = 0.5
-	hitbox.Color = HITBOX_COLOR
-	hitbox.Material = Enum.Material.Neon
-	hitbox.CanCollide = true
-	hitbox.Massless = true
-	hitbox.Anchored = false
-	
-	-- weld vào nhân vật
-	local weld = Instance.new("WeldConstraint")
-	weld.Part0 = hitbox
-	weld.Part1 = root
-	weld.Parent = hitbox
-	
-	hitbox.CFrame = root.CFrame
-	hitbox.Parent = character
+	if not root then return end
+
+	-- tránh chạy nhiều lần
+	if root:FindFirstChild("HitboxEdited") then return end
+
+	-- đánh dấu
+	local tag = Instance.new("BoolValue")
+	tag.Name = "HitboxEdited"
+	tag.Parent = root
+
+	-- 🔥 TĂNG HITBOX THẬT (server thấy)
+	root.Size = NEW_SIZE
+	root.Transparency = 0.5
+	root.Color = DEBUG_COLOR
+	root.Material = Enum.Material.Neon
+	root.CanCollide = true
 end
 
---// khi player vào
+local function onCharacter(player, character)
+	task.wait(0.5)
+	expandHitbox(character, player)
+end
+
 local function onPlayer(player)
-	if player == LocalPlayer then return end
-	
 	player.CharacterAdded:Connect(function(char)
-		task.wait(1)
-		createHitbox(char)
+		onCharacter(player, char)
 	end)
-	
-	-- nếu đã spawn sẵn
+
 	if player.Character then
-		task.wait(1)
-		createHitbox(player.Character)
+		onCharacter(player, player.Character)
 	end
 end
 
---// chạy cho player hiện tại
+-- chạy cho player hiện tại
 for _, plr in ipairs(Players:GetPlayers()) do
 	onPlayer(plr)
 end
 
---// player mới vào
+-- player mới vào
 Players.PlayerAdded:Connect(onPlayer)
