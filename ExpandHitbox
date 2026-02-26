@@ -1,11 +1,20 @@
 --// SETTINGS
-local NEW_SIZE = Vector3.new(6, 6, 6) -- chỉnh kích thước hitbox
+local NEW_SIZE = Vector3.new(6, 6, 6)
 local DEBUG_COLOR = Color3.fromRGB(0, 170, 255)
+
+-- ❗ đổi thành tên player bạn KHÔNG muốn tăng hitbox
+local EXCLUDE_PLAYER_NAME = "hdhoangmain"
 
 local Players = game:GetService("Players")
 
-local function expandHitbox(character, player)
+--// tăng hitbox
+local function expandHitbox(player, character)
 	if not character then return end
+	
+	-- 🚫 bỏ qua bản thân
+	if player.Name == EXCLUDE_PLAYER_NAME then
+		return
+	end
 
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
@@ -18,7 +27,7 @@ local function expandHitbox(character, player)
 	tag.Name = "HitboxEdited"
 	tag.Parent = root
 
-	-- 🔥 TĂNG HITBOX THẬT (server thấy)
+	-- 🔥 tăng hitbox thật (server)
 	root.Size = NEW_SIZE
 	root.Transparency = 0.5
 	root.Color = DEBUG_COLOR
@@ -26,25 +35,28 @@ local function expandHitbox(character, player)
 	root.CanCollide = true
 end
 
+--// khi character spawn
 local function onCharacter(player, character)
 	task.wait(0.5)
-	expandHitbox(character, player)
+	expandHitbox(player, character)
 end
 
+--// khi player vào
 local function onPlayer(player)
 	player.CharacterAdded:Connect(function(char)
 		onCharacter(player, char)
 	end)
 
+	-- nếu đã có character sẵn
 	if player.Character then
 		onCharacter(player, player.Character)
 	end
 end
 
--- chạy cho player hiện tại
+--// player hiện tại
 for _, plr in ipairs(Players:GetPlayers()) do
 	onPlayer(plr)
 end
 
--- player mới vào
+--// player mới vào (🔥 FIX CHO NGƯỜI MỚI)
 Players.PlayerAdded:Connect(onPlayer)
