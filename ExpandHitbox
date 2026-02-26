@@ -1,0 +1,62 @@
+--// SETTINGS
+local HITBOX_SIZE = Vector3.new(8, 8, 8) -- kích thước hitbox
+local HITBOX_COLOR = Color3.fromRGB(0, 170, 255)
+
+--// SERVICES
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+--// FUNCTION tạo hitbox
+local function createHitbox(character)
+	if not character then return end
+	if character:FindFirstChild("HumanoidRootPart") == nil then return end
+	if Players:GetPlayerFromCharacter(character) == LocalPlayer then return end
+	
+	-- tránh tạo trùng
+	if character:FindFirstChild("DebugHitbox") then return end
+	
+	local root = character:FindFirstChild("HumanoidRootPart")
+	
+	local hitbox = Instance.new("Part")
+	hitbox.Name = "DebugHitbox"
+	hitbox.Size = HITBOX_SIZE
+	hitbox.Transparency = 0.5
+	hitbox.Color = HITBOX_COLOR
+	hitbox.Material = Enum.Material.Neon
+	hitbox.CanCollide = true
+	hitbox.Massless = true
+	hitbox.Anchored = false
+	
+	-- weld vào nhân vật
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = hitbox
+	weld.Part1 = root
+	weld.Parent = hitbox
+	
+	hitbox.CFrame = root.CFrame
+	hitbox.Parent = character
+end
+
+--// khi player vào
+local function onPlayer(player)
+	if player == LocalPlayer then return end
+	
+	player.CharacterAdded:Connect(function(char)
+		task.wait(1)
+		createHitbox(char)
+	end)
+	
+	-- nếu đã spawn sẵn
+	if player.Character then
+		task.wait(1)
+		createHitbox(player.Character)
+	end
+end
+
+--// chạy cho player hiện tại
+for _, plr in ipairs(Players:GetPlayers()) do
+	onPlayer(plr)
+end
+
+--// player mới vào
+Players.PlayerAdded:Connect(onPlayer)
