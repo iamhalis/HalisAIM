@@ -75,7 +75,7 @@ end
 
 Players.PlayerAdded:Connect(setupPlayer)
 
--- UI
+--// UI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "HitboxUI"
 ScreenGui.Parent = CoreGui
@@ -86,12 +86,23 @@ MainFrame.Position = UDim2.new(0.7,0,0.2,0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 MainFrame.Parent = ScreenGui
 
+--// IMAGE BUTTON (CIRCLE)
 local ToggleButton = Instance.new("ImageButton")
 ToggleButton.Parent = ScreenGui
 ToggleButton.Size = UDim2.new(0,70,0,70)
 ToggleButton.Position = UDim2.new(0,40,0,40)
 ToggleButton.BackgroundTransparency = 1
 ToggleButton.Image = "rbxassetid://93595762651250"
+
+-- bo tròn
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(1,0)
+ButtonCorner.Parent = ToggleButton
+
+-- giữ đúng hình tròn
+local Aspect = Instance.new("UIAspectRatioConstraint")
+Aspect.AspectRatio = 1
+Aspect.Parent = ToggleButton
 
 local StatusButton = Instance.new("TextButton")
 StatusButton.Size = UDim2.new(0,180,0,50)
@@ -117,7 +128,7 @@ SizeLabel.Position = UDim2.new(0.5,-40,0,100)
 SizeLabel.Text = tostring(currentSize)
 SizeLabel.Parent = MainFrame
 
--- drag
+--// FRAME DRAG
 local dragging = false
 local dragStart, startPos
 
@@ -147,6 +158,37 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
+--// IMAGE BUTTON DRAG
+local draggingBtn = false
+local dragStartBtn, startPosBtn
+
+ToggleButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingBtn = true
+		dragStartBtn = input.Position
+		startPosBtn = ToggleButton.Position
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingBtn = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if draggingBtn and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStartBtn
+		ToggleButton.Position = UDim2.new(
+			startPosBtn.X.Scale,
+			startPosBtn.X.Offset + delta.X,
+			startPosBtn.Y.Scale,
+			startPosBtn.Y.Offset + delta.Y
+		)
+	end
+end)
+
+--// BUTTON LOGIC
 PlusButton.MouseButton1Click:Connect(function()
 	if enabled then
 		currentSize += 1
