@@ -91,7 +91,7 @@ ToggleButton.Parent = ScreenGui
 ToggleButton.Size = UDim2.new(0,70,0,70)
 ToggleButton.Position = UDim2.new(0,40,0,40)
 ToggleButton.BackgroundTransparency = 1
-ToggleButton.Image = "rbxassetid://97203952126178"
+ToggleButton.Image = "rbxassetid://93595762651250"
 
 local StatusButton = Instance.new("TextButton")
 StatusButton.Size = UDim2.new(0,180,0,50)
